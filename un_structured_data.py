@@ -1,7 +1,5 @@
 import psycopg2
 import json
-import nbformat
-import pandas as pd
 from datetime import datetime
 
 # Paso 1: Crear la base de datos y la tabla desde Python
@@ -17,13 +15,13 @@ def create_database_and_table():
         conn.autocommit = True  # Necesario para crear una base de datos
         cursor = conn.cursor()
 
-        # Crear la base de datos "Grupo4_data" si no existe
-        cursor.execute("SELECT datname FROM pg_database WHERE datname='Grupo4_data';")
+        # Crear la base de datos "kaggle_logs" si no existe
+        cursor.execute("SELECT datname FROM pg_database WHERE datname='kaggle_logs';")
         if not cursor.fetchone():
-            cursor.execute("CREATE DATABASE Grupo4_data;")
-            print("Base de datos 'Grupo4_data' creada correctamente.")
+            cursor.execute("CREATE DATABASE kaggle_logs;")
+            print("Base de datos 'kaggle_logs' creada correctamente.")
         else:
-            print("La base de datos 'Grupo4_data' ya existe.")
+            print("La base de datos 'kaggle_logs' ya existe.")
 
         # Cerrar la conexión inicial
         cursor.close()
@@ -31,7 +29,7 @@ def create_database_and_table():
 
         # Conectar a la nueva base de datos
         conn = psycopg2.connect(
-            database="Grupo4_data",
+            database="kaggle_logs",
             user="postgres",
             password="postgres",
             host="localhost",
@@ -42,11 +40,12 @@ def create_database_and_table():
         # Crear la tabla "structured_logs" si no existe
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS structured_logs (
-            session_id,
-            network_packet_size,
-            protocol_type,
-            login_attempts,
-            session_duration
+            id VARCHAR(50),
+            network_packet INT,
+            protocol VARCHAR(10),
+            ip_address INT,
+            timestamp DECIMAL(15, 6)
+            
         );
         """)
         print("Tabla 'structured_logs' creada correctamente.")
@@ -64,7 +63,7 @@ def insert_structured_logs():
     try:
         # Conectar a la base de datos
         conn = psycopg2.connect(
-            database="Grupo4_data",
+            database="kaggle_logs",
             user="postgres",
             password="postgres",
             host="localhost",
@@ -74,14 +73,21 @@ def insert_structured_logs():
 
         # Datos de ejemplo para insertar
         logs = [
-            (datetime(2025, 2, 22, 10, 0, 0), "192.168.1.10", "login_failed", "Intento de inicio de sesión fallido desde IP 192.168.1.10", "1"),
-            (datetime(2025, 2, 22, 10, 5, 0), "192.168.1.15", "access_denied", "Acceso denegado a recurso crítico","2")
-
+            ("SID_00001", 599, "TCP", 4, "492.983263"), 
+            ("SID_00002", 472, "TCP", 3, "1557.996461"), 
+            ("SID_00003", 629, "TCP", 3, "75.044262"), 
+            ("SID_00004", 804, "UDP", 4, "601.248835"), 
+            ("SID_00005", 453, "TCP", 5, "532.540888"), 
+            ("SID_00006", 453, "UDP", 5, "380.471550"), 
+            ("SID_00007", 815, "ICMP", 4, "728.107165"), 
+            ("SID_00008", 653, "TCP", 3, "12.599906"), 
+            ("SID_00009", 406, "TCP", 2, "542.558895"), 
+            ("SID_00010", 608, "UDP", 6, "531.944107")
         ]
 
         # Insertar registros en la tabla
         cursor.executemany("""
-        INSERT INTO structured_logs (session_id,network_packet_size,protocol_type,login_attempts,session_duration)
+        INSERT INTO structured_logs (id, network_packet, protocol, ip_address, timestamp)
         VALUES (%s, %s, %s, %s, %s);
         """, logs)
 
