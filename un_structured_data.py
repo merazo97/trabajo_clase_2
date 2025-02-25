@@ -74,45 +74,15 @@ def insert_structured_logs():
 
         # Datos de ejemplo para insertar
         logs = [
-        # Ruta al archivo Jupyter Notebook
-        ruta_archivo = '/workspaces/trabajo_clase_2/Grupo4_trabajo2.ipynb'
-
-        # Leer el archivo .ipynb
-        with open(ruta_archivo, 'r', encoding='utf-8') as f:
-            notebook = nbformat.read(f, as_version=4)
-
-        # Extraer las celdas del notebook
-        celdas = notebook['cells']
-
-        # Filtrar las celdas que contienen codigo
-        celdas_de_codigo = [celda for celda in celdas if celda['cell_type'] == 'code']
-
-        # Inicializar un DataFrame vacio
-        df_final = pd.DataFrame()
-
-        # Ejecutar cada celda de codigo y capturar los resultados en un DataFrame
-        for celda in celdas_de_codigo:
-            codigo = celda['source']
-            try:
-                exec(codigo)
-            except Exception as e:
-                print(f"Error al ejecutar el codigo: {e}")
-
-        # Extraer las ultimas 5 columnas del DataFrame
-        if not df_final.empty:
-            ultimas_columnas = df_final.iloc[:, -5:]
-            print(ultimas_columnas)
-        else:
-            print("No se encontraron DataFrames en el archivo.")
-
-        # Nota: Asegurate de que las celdas de codigo contienen la creacion del DataFrame `df_final`
+            (datetime(2025, 2, 22, 10, 0, 0), "192.168.1.10", "login_failed", "Intento de inicio de sesión fallido desde IP 192.168.1.10", "1"),
+            (datetime(2025, 2, 22, 10, 5, 0), "192.168.1.15", "access_denied", "Acceso denegado a recurso crítico","2")
 
         ]
 
         # Insertar registros en la tabla
         cursor.executemany("""
         INSERT INTO structured_logs (session_id,network_packet_size,protocol_type,login_attempts,session_duration)
-        VALUES (%s, %s, %s, %s);
+        VALUES (%s, %s, %s, %s, %s);
         """, logs)
 
         # Confirmar cambios y cerrar la conexión
